@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/PuerkitoBio/goquery"
 	"log"
 	"net/http"
 	"os"
 	"strings"
+
+	"github.com/PuerkitoBio/goquery"
 )
 
 type Info struct {
@@ -14,15 +15,14 @@ type Info struct {
 	inn    string
 	kpp    string
 	person string
-
 }
 
 func (k Info) show() {
-	fmt.Println("Название: ",k.name )
-	fmt.Println("ИНН: ",k.inn )
-	fmt.Println("КПП: ",k.kpp )
-	fmt.Println("Руководитель: ",k.person )			
-   
+	fmt.Println("Название: ", k.name)
+	fmt.Println("ИНН: ", k.inn)
+	fmt.Println("КПП: ", k.kpp)
+	fmt.Println("Руководитель: ", k.person)
+
 }
 
 func check(err error) {
@@ -31,15 +31,16 @@ func check(err error) {
 	}
 }
 
-func main() {
+func getCompany(inn string) Info {
+
 	var company Info
-	
-	str := "https://www.rusprofile.ru/search?query=" + os.Args[1] + "&type=ul"
+
+	str := "https://www.rusprofile.ru/search?query=" + inn + "&type=ul"
 	fmt.Println(str)
 	resp, err := http.Get(str)
 	if err != nil {
 		fmt.Println(err)
-		return
+		return company
 	}
 	defer resp.Body.Close()
 	/*
@@ -62,9 +63,7 @@ func main() {
 
 	//title := doc.Find("title").Text()
 
-
 	name := doc.Find("div.company-name")
-
 
 	company.name = name.Text()
 
@@ -73,12 +72,9 @@ func main() {
 		item.Find("dl.company-col").Each(func(index int, item *goquery.Selection) {
 
 			info := item.Find("dt.company-info__title")
-			
 
 			if info.Text() == "ИНН/КПП" {
 				item.Find("dd.company-info__text").Each(func(index int, item *goquery.Selection) {
-
-					
 
 					if index == 0 {
 
@@ -100,17 +96,22 @@ func main() {
 			if str == "Руководитель" {
 
 				company.person = item.Find("span.company-info__text").Find("a.link-arrow").Find("span").Text()
-			
 
 			}
-
 
 		})
 
 	})
 
-	company.show()
+	//	company.show()
 
 	check(err)
+	return company
 
+}
+
+func main() {
+	company := getCompany(os.Args[1])
+
+	company.show()
 }
